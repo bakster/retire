@@ -15,6 +15,17 @@ module Tire
       #
       def self.included(base)
 
+        # Delete an entry after a rollback
+        #
+        if base.respond_to?(:after_rollback)
+          index_delete = lambda {
+            @destroyed = true
+            tire.update_index
+          }
+
+          base.send :after_rollback, index_delete, on: :create
+        end
+
         # Update index on model instance change or destroy.
         #
         if base.respond_to?(:after_save) && base.respond_to?(:after_destroy)
